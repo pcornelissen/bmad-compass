@@ -18,6 +18,7 @@ export interface Workflow {
   definition: WorkflowDefinition;
   status: WorkflowStatus;
   artifacts: string[];         // matched artifact paths (relative)
+  subSteps?: SubStep[];
 }
 
 export interface Artifact {
@@ -53,9 +54,24 @@ export interface DashboardState {
   artifacts: Artifact[];
   nextStep: NextStep | null;
   stories: SprintStory[];      // empty if no sprint-status.yaml
+  modules?: ModuleInfo[];
+  workflowSource?: 'manifest' | 'fallback';
   generatedAt: number;
 }
 
 export type WsMessage =
   | { type: 'state'; payload: DashboardState }
   | { type: 'hello'; payload: { serverVersion: string } };
+
+export interface SubStep {
+  id: string;
+  label: string;
+  status: 'done' | 'hinted';
+  kind: 'section' | 'file';
+}
+
+export interface ModuleInfo {
+  name: string;
+  version: string;
+  source: 'built-in' | 'external';
+}
