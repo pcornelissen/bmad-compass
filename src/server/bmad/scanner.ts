@@ -18,20 +18,23 @@ export interface ScanResult {
 const OUTPUT_DIR = '_bmad-output';
 const BMAD_DIR = '_bmad';
 
+// Order matters: more-specific patterns first (e.g. prd-validation before plain prd).
 const PATH_TO_WORKFLOW: Array<{ pattern: RegExp; workflowId: string; displayName: (m: RegExpMatchArray) => string }> = [
-  { pattern: /^planning-artifacts\/brainstorming-report\.md$/i, workflowId: 'brainstorming', displayName: () => 'Brainstorming Report' },
-  { pattern: /^planning-artifacts\/market-research\.md$/i, workflowId: 'market-research', displayName: () => 'Market Research' },
-  { pattern: /^planning-artifacts\/domain-research\.md$/i, workflowId: 'domain-research', displayName: () => 'Domain Research' },
-  { pattern: /^planning-artifacts\/technical-research\.md$/i, workflowId: 'technical-research', displayName: () => 'Technical Research' },
-  { pattern: /^planning-artifacts\/brief\.md$/i, workflowId: 'product-brief', displayName: () => 'Product Brief' },
-  { pattern: /^planning-artifacts\/prfaq-.*\.md$/i, workflowId: 'prfaq', displayName: () => 'PR FAQ' },
-  { pattern: /^planning-artifacts\/PRD\.md$/i, workflowId: 'create-prd', displayName: () => 'PRD' },
-  { pattern: /^planning-artifacts\/prd-validation.*\.md$/i, workflowId: 'validate-prd', displayName: () => 'PRD Validation' },
-  { pattern: /^planning-artifacts\/ux[-_].*\.md$/i, workflowId: 'create-ux-design', displayName: (m) => `UX: ${path.basename(m[0], '.md').replace(/^ux[-_]/, '')}` },
-  { pattern: /^planning-artifacts\/architecture\.md$/i, workflowId: 'create-architecture', displayName: () => 'Architecture' },
+  { pattern: /^planning-artifacts\/brainstorming(?:[-_].*)?\.md$/i, workflowId: 'brainstorming', displayName: () => 'Brainstorming' },
+  { pattern: /^planning-artifacts\/market-research(?:[-_].*)?\.md$/i, workflowId: 'market-research', displayName: () => 'Market Research' },
+  { pattern: /^planning-artifacts\/domain-research(?:[-_].*)?\.md$/i, workflowId: 'domain-research', displayName: () => 'Domain Research' },
+  { pattern: /^planning-artifacts\/technical-research(?:[-_].*)?\.md$/i, workflowId: 'technical-research', displayName: () => 'Technical Research' },
+  { pattern: /^planning-artifacts\/(?:product-)?brief(?:[-_].*)?\.md$/i, workflowId: 'product-brief', displayName: () => 'Product Brief' },
+  { pattern: /^planning-artifacts\/prfaq(?:[-_].*)?\.md$/i, workflowId: 'prfaq', displayName: () => 'PR FAQ' },
+  { pattern: /^planning-artifacts\/prd-(validation|review)(?:[-_].*)?\.md$/i, workflowId: 'validate-prd', displayName: () => 'PRD Validation' },
+  { pattern: /^planning-artifacts\/prd(?:[-_].*)?\.md$/i, workflowId: 'create-prd', displayName: () => 'PRD' },
+  { pattern: /^planning-artifacts\/ux[-_].*\.(md|html)$/i, workflowId: 'create-ux-design', displayName: (m) => `UX: ${path.basename(m[0]).replace(/\.(md|html)$/i, '').replace(/^ux[-_]/, '')}` },
+  { pattern: /^planning-artifacts\/architecture(?:[-_].*)?\.md$/i, workflowId: 'create-architecture', displayName: () => 'Architecture' },
+  { pattern: /^planning-artifacts\/(?:implementation-)?readiness(?:[-_].*)?\.md$/i, workflowId: 'check-implementation-readiness', displayName: () => 'Implementation Readiness' },
   { pattern: /^planning-artifacts\/epics\/.+\.md$/i, workflowId: 'create-epics-and-stories', displayName: (m) => `Epic: ${path.basename(m[0], '.md')}` },
-  { pattern: /^implementation-artifacts\/sprint-status\.yaml$/i, workflowId: 'sprint-planning', displayName: () => 'Sprint Status' },
+  { pattern: /^implementation-artifacts\/sprint-status\.ya?ml$/i, workflowId: 'sprint-planning', displayName: () => 'Sprint Status' },
   { pattern: /^implementation-artifacts\/stories\/.+\.md$/i, workflowId: 'create-story', displayName: (m) => `Story: ${path.basename(m[0], '.md')}` },
+  { pattern: /^implementation-artifacts\/retrospective(?:[-_].*)?\.md$/i, workflowId: 'retrospective', displayName: () => 'Retrospective' },
   { pattern: /^project-context\.md$/i, workflowId: 'generate-project-context', displayName: () => 'Project Context' },
 ];
 

@@ -46,6 +46,32 @@ describe('scanArtifacts', () => {
     expect(epicArtifacts).toHaveLength(2);
   });
 
+  it('detects brainstorming, research, brief, prfaq with suffix variants', async () => {
+    vol.fromJSON({
+      '/proj/_bmad-output/planning-artifacts/brainstorming-session-2026-05-11.md': '# x',
+      '/proj/_bmad-output/planning-artifacts/market-research-saas.md': '# x',
+      '/proj/_bmad-output/planning-artifacts/product-brief.md': '# x',
+      '/proj/_bmad-output/planning-artifacts/prfaq-launch.md': '# x',
+    }, '/proj');
+    const result = await scanArtifacts('/proj', { fs: vol.promises as any });
+    const ids = result.artifacts.map(a => a.workflowId);
+    expect(ids).toContain('brainstorming');
+    expect(ids).toContain('market-research');
+    expect(ids).toContain('product-brief');
+    expect(ids).toContain('prfaq');
+  });
+
+  it('detects architecture and retrospective with suffix variants', async () => {
+    vol.fromJSON({
+      '/proj/_bmad-output/planning-artifacts/architecture-v2.md': '# x',
+      '/proj/_bmad-output/implementation-artifacts/retrospective-epic-1.md': '# x',
+    }, '/proj');
+    const result = await scanArtifacts('/proj', { fs: vol.promises as any });
+    const ids = result.artifacts.map(a => a.workflowId);
+    expect(ids).toContain('create-architecture');
+    expect(ids).toContain('retrospective');
+  });
+
   it('detects ux design files with various naming conventions', async () => {
     vol.fromJSON({
       '/proj/_bmad-output/planning-artifacts/ux-design-specification.md': '# x',
