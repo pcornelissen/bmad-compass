@@ -36,4 +36,32 @@ describe('SwimlaneMap', () => {
     await userEvent.click(screen.getByText('create-architecture'));
     expect(onSelect).toHaveBeenCalledWith('create-architecture');
   });
+
+  it('renders done counter when workflow has done substeps', () => {
+    const withSubsteps = [
+      {
+        ...wf('create-prd', 2, 'in-progress'),
+        subSteps: [
+          { id: 'a', label: 'Goals', status: 'done' as const, kind: 'section' as const },
+          { id: 'b', label: 'Personas', status: 'done' as const, kind: 'section' as const },
+          { id: 'c', label: 'Metrics', status: 'hinted' as const, kind: 'section' as const },
+        ],
+      },
+    ];
+    render(<SwimlaneMap workflows={withSubsteps} selectedId={null} onSelect={() => {}} currentPhase={2} />);
+    expect(screen.getByText(/\(2\)/)).toBeTruthy();
+  });
+
+  it('renders no counter when only hinted substeps exist', () => {
+    const onlyHinted = [
+      {
+        ...wf('create-prd', 2, 'pending'),
+        subSteps: [
+          { id: 'a', label: 'Goals', status: 'hinted' as const, kind: 'section' as const },
+        ],
+      },
+    ];
+    render(<SwimlaneMap workflows={onlyHinted} selectedId={null} onSelect={() => {}} currentPhase={2} />);
+    expect(screen.queryByText(/\(\d+\)/)).toBeNull();
+  });
 });

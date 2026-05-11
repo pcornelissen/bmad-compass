@@ -55,10 +55,12 @@ function Step({ workflow, selected, onClick }: { workflow: Workflow; selected: b
       : 'var(--status-pending)',
     animation: status === 'in-progress' ? 'pulse 1.6s infinite' : undefined,
   };
+  const doneCount = (workflow.subSteps ?? []).filter(s => s.status === 'done').length;
   return (
     <div onClick={onClick} style={stepStyle} role="button" tabIndex={0}>
       <span style={dotStyle} />
       <span>{workflow.definition.id}</span>
+      {doneCount > 0 && <span style={styles.counter}>({doneCount})</span>}
     </div>
   );
 }
@@ -75,4 +77,5 @@ const styles: Record<string, React.CSSProperties> = {
   stepNext: { background: 'white', borderColor: 'var(--av-orange)', boxShadow: '0 0 0 1.5px var(--av-orange)', color: 'var(--av-darker)', fontWeight: 600 },
   stepSelected: { background: '#fff7ed' },
   dot: { width: 7, height: 7, borderRadius: '50%', flexShrink: 0 },
+  counter: { fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--av-grey)', marginLeft: 'auto' },
 };
