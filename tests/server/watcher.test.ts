@@ -21,7 +21,11 @@ describe('watchProject', () => {
     const watcher = await watchProject(tmp, (changePath) => { changes.push(changePath); }, { debounceMs: 50 });
     try {
       fs.writeFileSync(path.join(tmp, '_bmad-output/planning-artifacts/PRD.md'), '# x');
-      await new Promise(r => setTimeout(r, 250));
+      // Poll up to 3s for the watcher event (CI and parallel test runs can delay FS events).
+      const start = Date.now();
+      while (changes.length === 0 && Date.now() - start < 3000) {
+        await new Promise(r => setTimeout(r, 50));
+      }
       expect(changes.length).toBeGreaterThan(0);
     } finally {
       await watcher.close();
@@ -36,7 +40,7 @@ describe('watchProject', () => {
       fs.writeFileSync(f, 'a');
       fs.writeFileSync(f, 'b');
       fs.writeFileSync(f, 'c');
-      await new Promise(r => setTimeout(r, 300));
+      await new Promise(r => setTimeout(r, 800));
       expect(calls).toBe(1);
     } finally {
       await watcher.close();
