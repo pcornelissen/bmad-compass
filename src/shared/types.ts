@@ -54,8 +54,8 @@ export interface DashboardState {
   artifacts: Artifact[];
   nextStep: NextStep | null;
   stories: SprintStory[];      // empty if no sprint-status.yaml
-  modules?: ModuleInfo[];
-  workflowSource?: 'manifest' | 'fallback';
+  modules: ModuleInfo[];
+  workflowSource: 'manifest' | 'fallback';
   generatedAt: number;
 }
 

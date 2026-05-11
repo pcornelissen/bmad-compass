@@ -24,7 +24,7 @@ describe('buildState', () => {
     expect(state.nextStep?.workflowId).toBe('create-epics-and-stories');
     expect(state.workflows.find(w => w.definition.id === 'create-prd')?.status).toBe('done');
     expect(state.workflows.find(w => w.definition.id === 'create-architecture')?.status).toBe('done');
-    expect(state.workflows.find(w => w.definition.id === 'create-epics-and-stories')?.status).toBe('pending');
+    expect(state.workflows.find(w => w.definition.id === 'create-epics-and-stories')?.status).toBe('in-progress');
   });
 
   it('uses package.json name when available', async () => {
@@ -55,5 +55,57 @@ describe('buildState', () => {
     const state = await buildState('/proj', { fs: vol.promises as any });
     expect(state.stories).toHaveLength(1);
     expect(state.nextStep?.workflowId).toBe('dev-story');
+  });
+
+  it('uses manifest-loader when _bmad/_config/manifest.yaml present', async () => {
+    const manifest = `modules:\n  - name: bmm\n    version: 6.6.0\n    source: built-in\n`;
+    const csv = `module,skill,display-name,menu-code,description,action,args,phase,after,before,required,output-location,outputs
+bmm,bmad-create-prd,Create PRD,CP,desc,,,2-planning,,,true,planning_artifacts,prd
+`;
+    vol.fromJSON({
+      '/proj/_bmad/_config/manifest.yaml': manifest,
+      '/proj/_bmad/bmm/module-help.csv': csv,
+      '/proj/_bmad-output/planning-artifacts/PRD.md': '# PRD',
+    }, '/proj');
+    const state = await buildState('/proj', { fs: vol.promises as any });
+    expect(state.workflowSource).toBe('manifest');
+    expect(state.modules.map(m => m.name)).toEqual(['bmm']);
+    expect(state.workflows.some(w => w.definition.id === 'create-prd')).toBe(true);
+  });
+
+  it('falls back to FALLBACK_WORKFLOWS when manifest is missing', async () => {
+    vol.fromJSON({
+      '/proj/_bmad-output/planning-artifacts/PRD.md': '# PRD',
+    }, '/proj');
+    const state = await buildState('/proj', { fs: vol.promises as any });
+    expect(state.workflowSource).toBe('fallback');
+    expect(state.modules).toEqual([]);
+    expect(state.workflows.length).toBeGreaterThan(10);
+  });
+
+  it('enriches workflow definitions with hints (agent from HINTS)', async () => {
+    const manifest = `modules:\n  - name: bmm\n    version: 6.6.0\n    source: built-in\n`;
+    const csv = `module,skill,display-name,menu-code,description,action,args,phase,after,before,required,output-location,outputs
+bmm,bmad-create-prd,Create PRD,CP,desc,,,2-planning,,,true,planning_artifacts,prd
+`;
+    vol.fromJSON({
+      '/proj/_bmad/_config/manifest.yaml': manifest,
+      '/proj/_bmad/bmm/module-help.csv': csv,
+    }, '/proj');
+    const state = await buildState('/proj', { fs: vol.promises as any });
+    const prd = state.workflows.find(w => w.definition.id === 'create-prd')!;
+    expect(prd.definition.agent).toBe('bmad-agent-pm');
+  });
+
+  it('attaches subSteps to workflows that have hints or matching files', async () => {
+    vol.fromJSON({
+      '/proj/_bmad-output/planning-artifacts/PRD.md': '## Problem Statement\n\n## Goals\n',
+    }, '/proj');
+    const state = await buildState('/proj', { fs: vol.promises as any });
+    const prd = state.workflows.find(w => w.definition.id === 'create-prd')!;
+    expect(prd.subSteps).toBeDefined();
+    const done = prd.subSteps!.filter(s => s.status === 'done').map(s => s.label);
+    expect(done).toEqual(['Problem Statement', 'Goals']);
+    expect(prd.subSteps!.some(s => s.status === 'hinted' && s.label === 'User Personas')).toBe(true);
   });
 });

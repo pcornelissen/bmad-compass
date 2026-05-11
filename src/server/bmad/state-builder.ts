@@ -1,10 +1,20 @@
 import * as nodeFs from 'node:fs';
 import path from 'node:path';
-import type { DashboardState, SprintStory, Workflow, WorkflowStatus } from '../../shared/types.js';
-import { WORKFLOWS } from './workflows.js';
+import type {
+  DashboardState,
+  ModuleInfo,
+  SprintStory,
+  Workflow,
+  WorkflowDefinition,
+  WorkflowStatus,
+} from '../../shared/types.js';
+import { FALLBACK_WORKFLOWS } from './workflows.js';
 import { scanArtifacts } from './scanner.js';
 import { parseSprintStatus } from './sprint-status.js';
 import { computeNextStep, currentPhase } from './next-step.js';
+import { loadWorkflowsFromManifest } from './manifest-loader.js';
+import { applyHintsToDefinition } from './hints.js';
+import { computeSubSteps } from './sub-steps.js';
 
 type FsLike = typeof nodeFs.promises;
 
@@ -24,14 +34,24 @@ export async function buildState(projectRoot: string, opts: BuildStateOptions = 
   } catch { /* no sprint file */ }
 
   const projectName = await resolveProjectName(projectRoot, fs);
+
+  const manifestResult = await loadWorkflowsFromManifest(projectRoot, fs);
+  const workflowDefs: WorkflowDefinition[] = (manifestResult?.workflows ?? FALLBACK_WORKFLOWS)
+    .map(def => applyHintsToDefinition({ ...def }));
+  const modules: ModuleInfo[] = manifestResult?.modules ?? [];
+  const workflowSource: 'manifest' | 'fallback' = manifestResult ? 'manifest' : 'fallback';
+
   const phase = currentPhase(artifacts);
   const nextStep = computeNextStep({ hasBmad, artifacts, stories });
 
-  const workflows: Workflow[] = WORKFLOWS.map(def => {
+  const workflows: Workflow[] = [];
+  for (const def of workflowDefs) {
     const matched = artifacts.filter(a => a.workflowId === def.id);
-    const status: WorkflowStatus = matched.length > 0 ? 'done' : 'pending';
-    return { definition: def, status, artifacts: matched.map(a => a.path) };
-  });
+    let status: WorkflowStatus = matched.length > 0 ? 'done' : 'pending';
+    if (def.id === nextStep?.workflowId) status = 'in-progress';
+    const subSteps = await computeSubSteps(def.id, artifacts, projectRoot, fs);
+    workflows.push({ definition: def, status, artifacts: matched.map(a => a.path), subSteps });
+  }
 
   return {
     projectRoot,
@@ -42,6 +62,8 @@ export async function buildState(projectRoot: string, opts: BuildStateOptions = 
     artifacts,
     nextStep,
     stories,
+    modules,
+    workflowSource,
     generatedAt: Date.now(),
   };
 }
