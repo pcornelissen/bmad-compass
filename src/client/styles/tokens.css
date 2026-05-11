@@ -1,0 +1,27 @@
+:root {
+  /* ATVANTAGE CI (extracted from atvantage.com) */
+  --av-dark: #303e4f;
+  --av-darker: #1a2627;
+  --av-text: #343e3f;
+  --av-orange: #ee6419;
+  --av-orange-bright: #f08225;
+  --av-grey: #909090;
+  --av-grey-mid: #707173;
+  --av-border: #e0e0e0;
+  --av-bg-soft: #f6f7f8;
+  --av-bg: #ffffff;
+
+  --status-done: #22c55e;
+  --status-done-bg: #ecfdf5;
+  --status-done-border: #86efac;
+  --status-pending: #c4c4c4;
+  --status-blocked: #ef4444;
+
+  --font-sans: 'Outfit', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --shadow-card: 0 2px 8px rgba(48, 62, 79, .06);
+}
