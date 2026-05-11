@@ -1,6 +1,6 @@
 import * as nodeFs from 'node:fs';
 import path from 'node:path';
-import type { DashboardState, Workflow, WorkflowStatus } from '../../shared/types.js';
+import type { DashboardState, SprintStory, Workflow, WorkflowStatus } from '../../shared/types.js';
 import { WORKFLOWS } from './workflows.js';
 import { scanArtifacts } from './scanner.js';
 import { parseSprintStatus } from './sprint-status.js';
@@ -16,7 +16,7 @@ export async function buildState(projectRoot: string, opts: BuildStateOptions = 
   const fs = opts.fs ?? nodeFs.promises;
   const { hasBmad, artifacts } = await scanArtifacts(projectRoot, { fs });
 
-  let stories = [];
+  let stories: SprintStory[] = [];
   const sprintPath = path.join(projectRoot, '_bmad-output/implementation-artifacts/sprint-status.yaml');
   try {
     const yamlContent = await fs.readFile(sprintPath, 'utf8');
