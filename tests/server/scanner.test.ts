@@ -46,6 +46,25 @@ describe('scanArtifacts', () => {
     expect(epicArtifacts).toHaveLength(2);
   });
 
+  it('detects ux design files with various naming conventions', async () => {
+    vol.fromJSON({
+      '/proj/_bmad-output/planning-artifacts/ux-design-specification.md': '# x',
+      '/proj/_bmad-output/planning-artifacts/ux-spec.md': '# x',
+      '/proj/_bmad-output/planning-artifacts/ux-flows.md': '# x',
+    }, '/proj');
+    const result = await scanArtifacts('/proj', { fs: vol.promises as any });
+    const ux = result.artifacts.filter(a => a.workflowId === 'create-ux-design');
+    expect(ux).toHaveLength(3);
+  });
+
+  it('detects prd-validation-report.md as validate-prd workflow', async () => {
+    vol.fromJSON({
+      '/proj/_bmad-output/planning-artifacts/prd-validation-report.md': '# x',
+    }, '/proj');
+    const result = await scanArtifacts('/proj', { fs: vol.promises as any });
+    expect(result.artifacts[0].workflowId).toBe('validate-prd');
+  });
+
   it('detects sprint-status.yaml', async () => {
     vol.fromJSON({
       '/proj/_bmad-output/implementation-artifacts/sprint-status.yaml': 'stories: []',
