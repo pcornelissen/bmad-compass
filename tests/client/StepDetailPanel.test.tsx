@@ -40,4 +40,39 @@ describe('StepDetailPanel', () => {
     await userEvent.click(screen.getByRole('button', { name: /✕|close/i }));
     expect(onClose).toHaveBeenCalled();
   });
+
+  it('renders no progress block when subSteps undefined', () => {
+    render(<StepDetailPanel workflow={workflow} onClose={() => {}} />);
+    expect(screen.queryByText(/FORTSCHRITT/i)).toBeNull();
+    expect(screen.queryByText(/VIELLEICHT/i)).toBeNull();
+  });
+
+  it('renders only done block when subSteps has done items only', () => {
+    const wf = {
+      ...workflow,
+      subSteps: [
+        { id: 'a', label: 'Problem Statement', status: 'done' as const, kind: 'section' as const },
+        { id: 'b', label: 'Goals', status: 'done' as const, kind: 'section' as const },
+      ],
+    };
+    render(<StepDetailPanel workflow={wf} onClose={() => {}} />);
+    expect(screen.getByText(/FORTSCHRITT/i)).toBeTruthy();
+    expect(screen.getByText('Problem Statement')).toBeTruthy();
+    expect(screen.queryByText(/VIELLEICHT ALS NÄCHSTES/i)).toBeNull();
+  });
+
+  it('renders both done and hinted when both present', () => {
+    const wf = {
+      ...workflow,
+      subSteps: [
+        { id: 'a', label: 'Goals', status: 'done' as const, kind: 'section' as const },
+        { id: 'b', label: 'User Personas', status: 'hinted' as const, kind: 'section' as const },
+      ],
+    };
+    render(<StepDetailPanel workflow={wf} onClose={() => {}} />);
+    expect(screen.getByText(/FORTSCHRITT/i)).toBeTruthy();
+    expect(screen.getByText('Goals')).toBeTruthy();
+    expect(screen.getByText(/VIELLEICHT ALS NÄCHSTES/i)).toBeTruthy();
+    expect(screen.getByText('User Personas')).toBeTruthy();
+  });
 });

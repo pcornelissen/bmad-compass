@@ -1,8 +1,11 @@
-import type { Workflow } from '../../shared/types.js';
+import type { SubStep, Workflow } from '../../shared/types.js';
 
 export function StepDetailPanel({ workflow, onClose }: { workflow: Workflow; onClose: () => void }) {
   const w = workflow.definition;
   const onCopy = () => navigator.clipboard?.writeText(w.command);
+
+  const done = (workflow.subSteps ?? []).filter(s => s.status === 'done');
+  const hinted = (workflow.subSteps ?? []).filter(s => s.status === 'hinted');
 
   return (
     <div style={styles.panel}>
@@ -13,6 +16,7 @@ export function StepDetailPanel({ workflow, onClose }: { workflow: Workflow; onC
         </div>
         <button onClick={onClose} aria-label="close" style={styles.close}>✕</button>
       </div>
+
       <div style={styles.grid}>
         <div>
           <div style={styles.label}>Was passiert</div>
@@ -31,10 +35,44 @@ export function StepDetailPanel({ workflow, onClose }: { workflow: Workflow; onC
           <a href={w.docsUrl} target="_blank" rel="noreferrer" style={styles.link}>docs</a>
         </div>
       </div>
+
+      {(done.length > 0 || hinted.length > 0) && (
+        <div style={styles.progress}>
+          {done.length > 0 && (
+            <div style={styles.progressBlock}>
+              <div style={styles.progressHead}>
+                <span style={styles.label}>FORTSCHRITT</span>
+                <span style={styles.counter}>{done.length}</span>
+              </div>
+              {done.map(s => <SubStepRow key={s.id} step={s} />)}
+            </div>
+          )}
+          {hinted.length > 0 && (
+            <div style={{ ...styles.progressBlock, marginTop: 10, borderTop: '1px dashed var(--av-border)', paddingTop: 8 }}>
+              <div style={styles.progressHead}>
+                <span style={styles.label}>VIELLEICHT ALS NÄCHSTES</span>
+                <span style={styles.counter}>{hinted.length} vorgeschlagen</span>
+              </div>
+              {hinted.map(s => <SubStepRow key={s.id} step={s} />)}
+            </div>
+          )}
+        </div>
+      )}
+
       <div style={styles.cmdRow}>
         <code style={styles.cmd}>{w.command}</code>
         <button onClick={onCopy} style={styles.copyBtn}>📋 Copy</button>
       </div>
+    </div>
+  );
+}
+
+function SubStepRow({ step }: { step: SubStep }) {
+  const isDone = step.status === 'done';
+  return (
+    <div style={{ ...styles.subStepRow, ...(isDone ? {} : styles.subStepHinted) }}>
+      <span style={isDone ? styles.subStepCheck : styles.subStepArrow}>{isDone ? '✓' : '↪'}</span>
+      <span>{step.label}</span>
     </div>
   );
 }
@@ -52,4 +90,12 @@ const styles: Record<string, React.CSSProperties> = {
   cmdRow: { marginTop: 10 },
   cmd: { background: 'var(--av-darker)', color: '#f0c896', padding: '6px 12px', borderRadius: 4, fontFamily: 'var(--font-mono)', fontSize: 12, marginRight: 8 },
   copyBtn: { background: 'var(--av-orange)', color: 'white', border: 0, padding: '6px 10px', borderRadius: 3, fontSize: 10, fontWeight: 600 },
+  progress: { marginTop: 14, paddingTop: 10, borderTop: '1px solid var(--av-border)' },
+  progressBlock: { marginBottom: 4 },
+  progressHead: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 },
+  counter: { fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--av-grey)' },
+  subStepRow: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, padding: '3px 0', color: 'var(--av-text)' },
+  subStepHinted: { color: 'var(--av-grey-mid)', fontStyle: 'italic' },
+  subStepCheck: { color: 'var(--status-done)', fontWeight: 700 },
+  subStepArrow: { color: 'var(--av-grey-mid)' },
 };
