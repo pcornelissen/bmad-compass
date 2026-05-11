@@ -22,6 +22,12 @@ Flags:
 - Renders markdown previews of artifacts
 - Live updates via file watcher (no reload needed)
 
+## Module Support
+
+BMAD Compass automatically discovers all workflows from your installed BMAD modules by reading `_bmad/_config/manifest.yaml` and each module's `module-help.csv`. When the manifest is absent (e.g. for older projects) it falls back to a built-in workflow list.
+
+For document-heavy workflows (PRD, Architecture, UX Spec) Compass also shows sub-step progress: real markdown sections are listed as done, and a small set of world-knowledge hints suggests sections you might still want to add.
+
 ## Architecture
 
 - Single Node process (Express + ws + chokidar) serves a built React SPA
