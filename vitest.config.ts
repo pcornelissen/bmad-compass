@@ -7,5 +7,8 @@ export default defineConfig({
     environment: 'happy-dom',
     globals: true,
     include: ['tests/**/*.test.{ts,tsx}'],
+    // chokidar/FSEvents on macOS gets unreliable when multiple watcher tests
+    // run in parallel forks. Running test files sequentially keeps the suite green.
+    fileParallelism: false,
   },
 });
