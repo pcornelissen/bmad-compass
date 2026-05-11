@@ -2,7 +2,7 @@ import type { WorkflowDefinition, Phase } from '../../shared/types.js';
 
 const docs = (slug: string) => `https://docs.bmad-method.org/workflows/${slug}`;
 
-export const WORKFLOWS: WorkflowDefinition[] = [
+export const FALLBACK_WORKFLOWS: WorkflowDefinition[] = [
   // Phase 1 — Analysis (all optional)
   { id: 'brainstorming', command: 'bmad-brainstorming', title: 'Brainstorming', description: 'Guided ideation and concept exploration.', phase: 1, agent: 'bmad-agent-analyst', optional: true, produces: ['planning-artifacts/brainstorming-report.md'], requires: [], docsUrl: docs('brainstorming') },
   { id: 'market-research', command: 'bmad-market-research', title: 'Market Research', description: 'Competitive and market analysis.', phase: 1, agent: 'bmad-agent-analyst', optional: true, produces: ['planning-artifacts/market-research.md'], requires: [], docsUrl: docs('market-research') },
@@ -35,7 +35,7 @@ export const WORKFLOWS: WorkflowDefinition[] = [
   { id: 'help', command: 'bmad-help', title: 'Help', description: 'Intelligent guide for project status and next steps.', phase: 1, agent: 'bmad-agent-analyst', optional: true, produces: [], requires: [], docsUrl: docs('help') },
 ];
 
-const byId = new Map(WORKFLOWS.map(w => [w.id, w]));
+const byId = new Map(FALLBACK_WORKFLOWS.map(w => [w.id, w]));
 
 export function getWorkflow(id: string): WorkflowDefinition {
   const w = byId.get(id);
@@ -45,7 +45,7 @@ export function getWorkflow(id: string): WorkflowDefinition {
 
 export function workflowsByPhase(): Record<Phase, WorkflowDefinition[]> {
   const acc: Record<Phase, WorkflowDefinition[]> = { 1: [], 2: [], 3: [], 4: [] };
-  for (const w of WORKFLOWS) acc[w.phase].push(w);
+  for (const w of FALLBACK_WORKFLOWS) acc[w.phase].push(w);
   return acc;
 }
 
@@ -56,3 +56,6 @@ export const MAP_WORKFLOW_IDS = new Set([
   'create-architecture', 'create-epics-and-stories', 'check-implementation-readiness',
   'sprint-planning', 'create-story', 'dev-story', 'code-review', 'retrospective',
 ]);
+
+/** Backwards-compatible alias. Prefer FALLBACK_WORKFLOWS in new code. */
+export const WORKFLOWS = FALLBACK_WORKFLOWS;

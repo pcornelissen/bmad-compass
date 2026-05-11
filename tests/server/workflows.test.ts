@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { WORKFLOWS, getWorkflow, workflowsByPhase } from '../../src/server/bmad/workflows.js';
+import { WORKFLOWS, FALLBACK_WORKFLOWS, getWorkflow, workflowsByPhase } from '../../src/server/bmad/workflows.js';
 
 describe('workflow catalog', () => {
   it('contains all 21 BMAD workflows', () => {
@@ -35,5 +35,10 @@ describe('workflow catalog', () => {
 
   it('throws on unknown workflow id', () => {
     expect(() => getWorkflow('not-a-workflow')).toThrow();
+  });
+
+  it('exports FALLBACK_WORKFLOWS as alias of WORKFLOWS', async () => {
+    const { WORKFLOWS, FALLBACK_WORKFLOWS } = await import('../../src/server/bmad/workflows.js');
+    expect(FALLBACK_WORKFLOWS).toBe(WORKFLOWS);
   });
 });
