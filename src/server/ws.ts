@@ -1,4 +1,4 @@
-import { WebSocketServer, OPEN, WebSocket } from 'ws';
+import { WebSocketServer, WebSocket } from 'ws';
 import type { Server } from 'node:http';
 import type { DashboardState, WsMessage } from '../shared/types.js';
 
@@ -11,13 +11,15 @@ export function attachWebSocket(server: Server, getState: () => Promise<Dashboar
   const wss = new WebSocketServer({ server, path: '/ws' });
 
   const send = (ws: WebSocket, msg: WsMessage) => {
-    if (ws.readyState === OPEN) ws.send(JSON.stringify(msg));
+    ws.send(JSON.stringify(msg));
   };
 
   wss.on('connection', async (ws) => {
-    ws.send(JSON.stringify({ type: 'hello', payload: { serverVersion: '0.1.0' } }));
+    // Defer message sending with setTimeout to ensure client handlers are registered
+    await new Promise(r => setTimeout(r, 50));
+    send(ws, { type: 'hello', payload: { serverVersion: '0.1.0' } });
     const state = await getState();
-    ws.send(JSON.stringify({ type: 'state', payload: state }));
+    send(ws, { type: 'state', payload: state });
   });
 
   const broadcastState = async () => {
