@@ -1,11 +1,18 @@
-import type React from 'react';
+import type { ModuleInfo } from '../../shared/types.js';
 
 const PHASE_NAMES: Record<number, string> = {
   1: 'Analysis', 2: 'Planning', 3: 'Solutioning', 4: 'Implementation',
 };
 
-export function Header({ projectName, projectRoot, phase, wsOnline }: {
-  projectName: string; projectRoot: string; phase: 1|2|3|4; wsOnline: boolean;
+export function Header({
+  projectName, projectRoot, phase, wsOnline, modules, workflowSource,
+}: {
+  projectName: string;
+  projectRoot: string;
+  phase: 1|2|3|4;
+  wsOnline: boolean;
+  modules: ModuleInfo[];
+  workflowSource: 'manifest' | 'fallback';
 }) {
   return (
     <header style={styles.header}>
@@ -17,6 +24,11 @@ export function Header({ projectName, projectRoot, phase, wsOnline }: {
         </div>
       </div>
       <div style={styles.right}>
+        {workflowSource === 'manifest' && modules.length > 0 && (
+          <div style={styles.modules} title="Workflows aus _bmad/-Manifesten geladen">
+            {modules.map(m => m.name).join(' · ')}
+          </div>
+        )}
         <div style={styles.status}>
           <span style={{ ...styles.pulse, background: wsOnline ? '#22c55e' : '#ef4444' }} />
           {wsOnline ? 'live' : 'offline'}
@@ -35,6 +47,7 @@ const styles: Record<string, React.CSSProperties> = {
   title: { fontWeight: 700, fontSize: 14, letterSpacing: '.3px' },
   sub: { fontSize: 11, color: '#b0bcc9', fontFamily: 'var(--font-mono)' },
   right: { display: 'flex', alignItems: 'center', gap: 14 },
+  modules: { fontSize: 10, color: '#b0bcc9', fontFamily: 'var(--font-mono)', cursor: 'help' },
   status: { fontSize: 10, color: '#b0bcc9', display: 'flex', alignItems: 'center', gap: 4 },
   pulse: { width: 6, height: 6, borderRadius: '50%' },
   pill: { background: 'var(--av-orange)', color: 'white', padding: '4px 12px', borderRadius: 12, fontSize: 11, fontWeight: 600 },

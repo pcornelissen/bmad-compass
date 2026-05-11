@@ -35,7 +35,7 @@ export function App() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <Header projectName={data.projectName} projectRoot={data.projectRoot} phase={data.currentPhase} wsOnline={ui.wsOnline} />
+      <Header projectName={data.projectName} projectRoot={data.projectRoot} phase={data.currentPhase} wsOnline={ui.wsOnline} modules={data.modules ?? []} workflowSource={data.workflowSource ?? 'fallback'} />
       <main style={{ padding: '16px 18px', maxWidth: 1280, margin: '0 auto', width: '100%' }}>
         <Hero nextStep={data.nextStep} />
         <SectionLabel>Workflow-Map</SectionLabel>
