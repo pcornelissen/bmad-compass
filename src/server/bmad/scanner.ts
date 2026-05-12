@@ -21,9 +21,10 @@ const BMAD_DIR = '_bmad';
 // Order matters: more-specific patterns first (e.g. prd-validation before plain prd).
 const PATH_TO_WORKFLOW: Array<{ pattern: RegExp; workflowId: string; displayName: (m: RegExpMatchArray) => string }> = [
   { pattern: /^planning-artifacts\/brainstorming(?:[-_].*)?\.md$/i, workflowId: 'brainstorming', displayName: () => 'Brainstorming' },
-  { pattern: /^planning-artifacts\/market-research(?:[-_].*)?\.md$/i, workflowId: 'market-research', displayName: () => 'Market Research' },
-  { pattern: /^planning-artifacts\/domain-research(?:[-_].*)?\.md$/i, workflowId: 'domain-research', displayName: () => 'Domain Research' },
-  { pattern: /^planning-artifacts\/technical-research(?:[-_].*)?\.md$/i, workflowId: 'technical-research', displayName: () => 'Technical Research' },
+  { pattern: /^planning-artifacts\/(?:research\/)?market-research(?:[-_].*)?\.md$/i, workflowId: 'market-research', displayName: () => 'Market Research' },
+  { pattern: /^planning-artifacts\/(?:research\/)?domain-research(?:[-_].*)?\.md$/i, workflowId: 'domain-research', displayName: () => 'Domain Research' },
+  { pattern: /^planning-artifacts\/(?:research\/)?domain[-_].*-research(?:[-_].*)?\.md$/i, workflowId: 'domain-research', displayName: () => 'Domain Research' },
+  { pattern: /^planning-artifacts\/(?:research\/)?technical-research(?:[-_].*)?\.md$/i, workflowId: 'technical-research', displayName: () => 'Technical Research' },
   { pattern: /^planning-artifacts\/(?:product-)?brief(?:[-_].*)?\.md$/i, workflowId: 'product-brief', displayName: () => 'Product Brief' },
   { pattern: /^planning-artifacts\/prfaq(?:[-_].*)?\.md$/i, workflowId: 'prfaq', displayName: () => 'PR FAQ' },
   { pattern: /^planning-artifacts\/prd-(validation|review)(?:[-_].*)?\.md$/i, workflowId: 'validate-prd', displayName: () => 'PRD Validation' },
