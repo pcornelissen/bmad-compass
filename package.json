@@ -1,6 +1,6 @@
 {
   "name": "bmad-compass",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Local web dashboard that visualizes BMAD-Method project progress alongside Claude Code.",
   "keywords": ["bmad", "bmad-method", "dashboard", "claude-code", "ai-coding", "workflow"],
   "type": "module",
