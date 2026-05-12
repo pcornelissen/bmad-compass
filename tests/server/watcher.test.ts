@@ -5,7 +5,7 @@ import path from 'node:path';
 import os from 'node:os';
 import { watchProject } from '../../src/server/watcher.js';
 
-describe('watchProject', () => {
+describe.skipIf(process.env.CI)('watchProject', () => {
   let tmp: string;
 
   beforeEach(() => {

@@ -3,6 +3,7 @@ import path from 'node:path';
 
 export interface WatchOptions {
   debounceMs?: number;
+  usePolling?: boolean;        // force fs polling instead of native events (more reliable in containers/CI)
 }
 
 export interface ProjectWatcher {
@@ -23,6 +24,8 @@ export async function watchProject(
   const watcher = chokidar.watch(targets, {
     ignoreInitial: true,
     persistent: true,
+    usePolling: opts.usePolling ?? false,
+    interval: 100,
     awaitWriteFinish: { stabilityThreshold: 50, pollInterval: 25 },
   });
 
