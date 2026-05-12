@@ -2,6 +2,8 @@
 
 Local web dashboard that visualizes the progress of a BMAD-Method project alongside Claude Code.
 
+![BMAD Compass Dashboard](https://raw.githubusercontent.com/pcornelissen/bmad-compass/main/docs/screenshot.png)
+
 ## Usage
 
 ```bash
