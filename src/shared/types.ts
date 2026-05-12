@@ -39,11 +39,23 @@ export interface NextStep {
   reason: string;
 }
 
+export type StoryStatus =
+  | 'backlog'
+  | 'ready-for-dev'
+  | 'in-progress'
+  | 'review'
+  | 'done'
+  | 'optional'
+  | 'blocked';
+
+export type StoryKind = 'epic' | 'story' | 'retrospective';
+
 export interface SprintStory {
   id: string;
   title: string;
   epicId: string;
-  status: 'backlog' | 'in-progress' | 'done' | 'blocked';
+  status: StoryStatus;
+  kind: StoryKind;
 }
 
 export interface DashboardState {

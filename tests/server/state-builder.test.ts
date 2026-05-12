@@ -78,7 +78,7 @@ describe('buildState', () => {
     }, '/proj');
     const state = await buildState('/proj', { fs: vol.promises as any });
     expect(state.stories).toHaveLength(1);
-    expect(state.nextStep?.workflowId).toBe('dev-story');
+    expect(state.nextStep?.workflowId).toBe('create-story');
   });
 
   it('uses manifest-loader when _bmad/_config/manifest.yaml present', async () => {

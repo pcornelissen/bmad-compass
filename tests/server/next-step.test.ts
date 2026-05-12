@@ -45,24 +45,58 @@ describe('computeNextStep', () => {
     expect(r?.workflowId).toBe('sprint-planning');
   });
 
-  it('recommends dev-story when stories are pending', () => {
-    const stories: SprintStory[] = [{ id: 's1', title: 't', epicId: 'e1', status: 'backlog' }];
+  it('recommends create-story when stories have no in-flight work', () => {
+    const stories: SprintStory[] = [
+      { id: 'epic-1', title: 'Epic 1', epicId: 'epic-1', status: 'backlog', kind: 'epic' },
+      { id: '1-1-foo', title: '1.1 Foo', epicId: 'epic-1', status: 'backlog', kind: 'story' },
+    ];
+    const r = computeNextStep({
+      hasBmad: true,
+      artifacts: [art('create-prd'), art('create-architecture'), art('create-epics-and-stories'), art('sprint-planning')],
+      stories,
+    });
+    expect(r?.workflowId).toBe('create-story');
+    expect(r?.reason).toContain('1-1-foo');
+  });
+
+  it('recommends dev-story when a story is in-progress', () => {
+    const stories: SprintStory[] = [
+      { id: '1-1-foo', title: '1.1', epicId: 'epic-1', status: 'in-progress', kind: 'story' },
+      { id: '1-2-bar', title: '1.2', epicId: 'epic-1', status: 'backlog', kind: 'story' },
+    ];
     const r = computeNextStep({
       hasBmad: true,
       artifacts: [art('create-prd'), art('create-architecture'), art('create-epics-and-stories'), art('sprint-planning')],
       stories,
     });
     expect(r?.workflowId).toBe('dev-story');
+    expect(r?.reason).toContain('1-1-foo');
   });
 
-  it('returns null when all stories done', () => {
-    const stories: SprintStory[] = [{ id: 's1', title: 't', epicId: 'e1', status: 'done' }];
+  it('recommends code-review when a story is in review', () => {
+    const stories: SprintStory[] = [
+      { id: '1-1-foo', title: '1.1', epicId: 'epic-1', status: 'review', kind: 'story' },
+      { id: '1-2-bar', title: '1.2', epicId: 'epic-1', status: 'backlog', kind: 'story' },
+    ];
     const r = computeNextStep({
       hasBmad: true,
       artifacts: [art('create-prd'), art('create-architecture'), art('create-epics-and-stories'), art('sprint-planning')],
       stories,
     });
-    expect(r?.workflowId === 'retrospective' || r === null).toBe(true);
+    expect(r?.workflowId).toBe('code-review');
+  });
+
+  it('returns null when all stories done and only optional retros remain', () => {
+    const stories: SprintStory[] = [
+      { id: '1-1-foo', title: '1.1', epicId: 'epic-1', status: 'done', kind: 'story' },
+      { id: 'epic-1-retrospective', title: 'Epic 1 Retro', epicId: 'epic-1', status: 'done', kind: 'retrospective' },
+    ];
+    const r = computeNextStep({
+      hasBmad: true,
+      artifacts: [art('create-prd'), art('create-architecture'), art('create-epics-and-stories'), art('sprint-planning')],
+      stories,
+    });
+    expect(r).toBeNull();
   });
 
   it('result includes command and agent', () => {

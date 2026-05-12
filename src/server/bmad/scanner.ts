@@ -36,6 +36,7 @@ const PATH_TO_WORKFLOW: Array<{ pattern: RegExp; workflowId: string; displayName
   { pattern: /^planning-artifacts\/epics(?:[-_].*)?\.md$/i, workflowId: 'create-epics-and-stories', displayName: () => 'Epics' },
   { pattern: /^implementation-artifacts\/sprint-status\.ya?ml$/i, workflowId: 'sprint-planning', displayName: () => 'Sprint Status' },
   { pattern: /^implementation-artifacts\/stories\/.+\.md$/i, workflowId: 'create-story', displayName: (m) => `Story: ${path.basename(m[0], '.md')}` },
+  { pattern: /^implementation-artifacts\/\d+-\d+-.+\.md$/i, workflowId: 'create-story', displayName: (m) => `Story: ${path.basename(m[0], '.md')}` },
   { pattern: /^implementation-artifacts\/retrospective(?:[-_].*)?\.md$/i, workflowId: 'retrospective', displayName: () => 'Retrospective' },
   { pattern: /^project-context\.md$/i, workflowId: 'generate-project-context', displayName: () => 'Project Context' },
 ];
