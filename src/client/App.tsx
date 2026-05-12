@@ -4,6 +4,7 @@ import { fetchState, fetchArtifact, connectWs } from './api.js';
 import { Header } from './components/Header.js';
 import { Hero } from './components/Hero.js';
 import { SwimlaneMap } from './components/SwimlaneMap.js';
+import { HelpersRow } from './components/HelpersRow.js';
 import { StepDetailPanel } from './components/StepDetailPanel.js';
 import { ArtifactList } from './components/ArtifactList.js';
 import { ArtifactPreview } from './components/ArtifactPreview.js';
@@ -40,6 +41,7 @@ export function App() {
         <Hero nextStep={data.nextStep} />
         <SectionLabel>Workflow-Map</SectionLabel>
         <SwimlaneMap workflows={data.workflows} selectedId={ui.selectedWorkflowId} onSelect={selectWorkflow} currentPhase={data.currentPhase} />
+        <HelpersRow workflows={data.workflows} selectedId={ui.selectedWorkflowId} onSelect={selectWorkflow} />
         {selected && <StepDetailPanel workflow={selected} onClose={() => selectWorkflow(null)} />}
         <SectionLabel>Artefakte <span style={{ color: 'var(--av-grey)', fontWeight: 400 }}>({data.artifacts.length})</span></SectionLabel>
         <ArtifactList artifacts={data.artifacts} onOpen={onOpenArtifact} />

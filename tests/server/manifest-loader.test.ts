@@ -49,8 +49,28 @@ describe('loadWorkflowsFromManifest', () => {
     expect(ids).toContain('create-architecture');
     expect(ids).toContain('create-story');
     expect(ids).toContain('cis-storyteller');
-    expect(ids).not.toContain('quick-dev');
+    // anytime workflows ARE included with cross=true (shown in helpers row)
+    expect(ids).toContain('quick-dev');
+    const qd = result!.workflows.find(w => w.id === 'quick-dev')!;
+    expect(qd.cross).toBe(true);
     expect(ids).not.toContain('_meta');
+  });
+
+  it('skips bmad-agent-* skills (agent capabilities, not workflows)', async () => {
+    const agentCsv = `module,skill,display-name,menu-code,description,action,args,phase,after,before,required,output-location,outputs
+bmm,bmad-create-prd,Create PRD,CP,desc,,,2-planning,,,true,planning_artifacts,prd
+bmm,bmad-agent-tech-writer,Write Document,WD,desc,write,,anytime,,,false,project-knowledge,document
+cis,bmad-cis-agent-storyteller,Storyteller,ST,desc,,,1-analysis,,,false,planning_artifacts,story
+`;
+    vol.fromJSON({
+      '/proj/_bmad/_config/manifest.yaml': manifestYaml,
+      '/proj/_bmad/bmm/module-help.csv': agentCsv,
+    }, '/proj');
+    const result = await loadWorkflowsFromManifest('/proj', vol.promises as any);
+    const ids = result!.workflows.map(w => w.id);
+    expect(ids).toContain('create-prd');
+    expect(ids).not.toContain('agent-tech-writer');
+    expect(ids).not.toContain('cis-agent-storyteller');
   });
 
   it('extracts requires from after column, stripping bmad- prefix and :suffix', async () => {

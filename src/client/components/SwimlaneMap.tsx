@@ -7,19 +7,13 @@ const PHASE_LABELS: Record<Phase, { name: string; sub?: string }> = {
   4: { name: 'Implementation' },
 };
 
-const MAP_IDS = new Set([
-  'brainstorming','market-research','domain-research','technical-research','product-brief','prfaq',
-  'create-prd','create-ux-design',
-  'create-architecture','create-epics-and-stories','check-implementation-readiness',
-  'sprint-planning','create-story','dev-story','code-review','retrospective',
-]);
-
 export function SwimlaneMap({ workflows, selectedId, onSelect, currentPhase }: {
   workflows: Workflow[]; selectedId: string | null; onSelect: (id: string) => void; currentPhase: Phase;
 }) {
   const byPhase: Record<Phase, Workflow[]> = { 1: [], 2: [], 3: [], 4: [] };
   for (const w of workflows) {
-    if (MAP_IDS.has(w.definition.id)) byPhase[w.definition.phase].push(w);
+    if (w.definition.cross) continue;
+    byPhase[w.definition.phase].push(w);
   }
 
   return (

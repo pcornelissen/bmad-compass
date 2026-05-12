@@ -60,9 +60,13 @@ export async function loadWorkflowsFromManifest(
     for (const row of rows) {
       const skill = (row.skill ?? '').trim();
       if (!skill.startsWith('bmad-') || skill === 'bmad-help') continue;
+      // Skip agent-level helper actions (write-document, mermaid-generate, etc.) — these
+      // are agent capabilities, not standalone workflows.
+      if (/^bmad-(?:[a-z0-9-]+-)?agent-/i.test(skill)) continue;
 
       const phaseRaw = (row.phase ?? '').trim().toLowerCase();
-      const phase = phaseToNumber(phaseRaw);
+      const isAnytime = phaseRaw === 'anytime';
+      const phase = isAnytime ? 4 : phaseToNumber(phaseRaw);
       if (phase === null) continue;
 
       const id = skill.replace(/^bmad-/, '');
@@ -95,6 +99,7 @@ export async function loadWorkflowsFromManifest(
         produces: [],
         requires,
         docsUrl: `https://docs.bmad-method.org/workflows/${id}`,
+        cross: isAnytime,
       });
     }
   }

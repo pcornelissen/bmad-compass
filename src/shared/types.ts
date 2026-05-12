@@ -12,6 +12,7 @@ export interface WorkflowDefinition {
   produces: string[];          // relative paths or glob-ish patterns under _bmad-output/
   requires: string[];          // workflow ids that must be done first
   docsUrl: string;
+  cross?: boolean;             // true = cross-phase helper (anytime), shown in Helpers row instead of swimlane
 }
 
 export interface Workflow {
