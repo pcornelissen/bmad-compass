@@ -19,7 +19,7 @@ export function Header({
       <div style={styles.brand}>
         <div style={styles.mark}>▲</div>
         <div>
-          <div style={styles.title}>BMAD COMPASS</div>
+          <div style={styles.projectName}>{projectName}</div>
           <div style={styles.sub}>{projectRoot}</div>
         </div>
       </div>
@@ -34,7 +34,7 @@ export function Header({
           {wsOnline ? 'live' : 'offline'}
         </div>
         <div style={styles.pill}>Phase {phase} · {PHASE_NAMES[phase]}</div>
-        <div style={styles.proj}>{projectName}</div>
+        <div style={styles.brandTag} title="BMAD Compass">BMAD COMPASS</div>
       </div>
     </header>
   );
@@ -43,13 +43,13 @@ export function Header({
 const styles: Record<string, React.CSSProperties> = {
   header: { background: 'var(--av-dark)', color: 'white', padding: '12px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
   brand: { display: 'flex', alignItems: 'center', gap: 10 },
-  mark: { width: 24, height: 24, borderRadius: 4, background: 'var(--av-orange)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 13 },
-  title: { fontWeight: 700, fontSize: 14, letterSpacing: '.3px' },
+  mark: { width: 28, height: 28, borderRadius: 4, background: 'var(--av-orange)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 15 },
+  projectName: { fontWeight: 700, fontSize: 18, letterSpacing: '.2px', color: 'white' },
   sub: { fontSize: 11, color: '#b0bcc9', fontFamily: 'var(--font-mono)' },
   right: { display: 'flex', alignItems: 'center', gap: 14 },
   modules: { fontSize: 10, color: '#b0bcc9', fontFamily: 'var(--font-mono)', cursor: 'help' },
   status: { fontSize: 10, color: '#b0bcc9', display: 'flex', alignItems: 'center', gap: 4 },
   pulse: { width: 6, height: 6, borderRadius: '50%' },
   pill: { background: 'var(--av-orange)', color: 'white', padding: '4px 12px', borderRadius: 12, fontSize: 11, fontWeight: 600 },
-  proj: { fontSize: 11, color: '#b0bcc9', fontFamily: 'var(--font-mono)' },
+  brandTag: { fontSize: 9, color: '#7d8a99', fontFamily: 'var(--font-mono)', letterSpacing: '1.2px', textTransform: 'uppercase', cursor: 'help' },
 };
