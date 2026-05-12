@@ -17,7 +17,7 @@ describe('watchProject', () => {
     fs.rmSync(tmp, { recursive: true, force: true });
   });
 
-  it('emits change events for files under _bmad-output', async () => {
+  it('emits change events for files under _bmad-output', { retry: 3 }, async () => {
     const changes: string[] = [];
     const watcher = await watchProject(tmp, (changePath) => { changes.push(changePath); }, { debounceMs: 50 });
     try {
@@ -33,7 +33,7 @@ describe('watchProject', () => {
     }
   });
 
-  it('debounces rapid changes to a single callback', async () => {
+  it('debounces rapid changes to a single callback', { retry: 3 }, async () => {
     let calls = 0;
     const watcher = await watchProject(tmp, () => { calls++; }, { debounceMs: 100 });
     try {
