@@ -1,7 +1,8 @@
 {
   "name": "bmad-compass",
-  "version": "0.1.0",
-  "description": "Local web dashboard that visualizes BMAD-Method project progress.",
+  "version": "0.3.0",
+  "description": "Local web dashboard that visualizes BMAD-Method project progress alongside Claude Code.",
+  "keywords": ["bmad", "bmad-method", "dashboard", "claude-code", "ai-coding", "workflow"],
   "type": "module",
   "bin": {
     "bmad-compass": "./bin/bmad-compass.js"
@@ -10,8 +11,19 @@
   "files": [
     "bin",
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
+  "author": "Patrick Cornelißen <patrick.cornelissen@atvantage.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/pcornelissen/bmad-compass#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pcornelissen/bmad-compass.git"
+  },
+  "bugs": {
+    "url": "https://github.com/pcornelissen/bmad-compass/issues"
+  },
   "scripts": {
     "dev:server": "tsx watch src/server/index.ts",
     "dev:client": "vite",
