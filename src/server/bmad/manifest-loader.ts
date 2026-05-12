@@ -73,13 +73,22 @@ export async function loadWorkflowsFromManifest(
       const requires = parseAfter(row.after);
       const isRequired = (row.required ?? '').trim().toLowerCase() === 'true';
 
-      // Dedupe by skill — BMAD's CSV lists multiple rows when a workflow has internal
-      // sub-actions (e.g. create-story has create/validate). The user invokes the
-      // skill once; keep one entry, preferring the required variant.
+      // Dedupe by skill — same workflow may appear:
+      //   - twice in one module (different actions like create-story:create/:validate)
+      //   - across modules (core + bmm both define bmad-brainstorming)
+      // Preference: phased over cross, required over optional.
       const existing = workflows.find(w => w.id === id);
       if (existing) {
-        if (isRequired && existing.optional) {
-          // Upgrade the existing entry with required info.
+        const replaceWithPhased = existing.cross && !isAnytime;
+        const upgradeRequired = isRequired && existing.optional;
+        if (replaceWithPhased) {
+          existing.phase = phase;
+          existing.cross = isAnytime;
+          existing.title = (row['display-name'] ?? existing.title).trim();
+          if (row.description) existing.description = row.description.trim();
+          if (requires.length > 0) existing.requires = requires;
+          if (isRequired) existing.optional = false;
+        } else if (upgradeRequired) {
           existing.optional = false;
           existing.title = (row['display-name'] ?? existing.title).trim();
           if (row.description) existing.description = row.description.trim();
