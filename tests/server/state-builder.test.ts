@@ -27,6 +27,30 @@ describe('buildState', () => {
     expect(state.workflows.find(w => w.definition.id === 'create-epics-and-stories')?.status).toBe('in-progress');
   });
 
+  it('extracts human-readable title from product-brief H1', async () => {
+    vol.fromJSON({
+      '/proj/_bmad-output/planning-artifacts/product-brief.md': '# Product Brief: WorkTide\n\nbody',
+    }, '/proj');
+    const state = await buildState('/proj', { fs: vol.promises as any });
+    expect(state.projectName).toBe('WorkTide');
+  });
+
+  it('extracts title from suffixed product-brief variants', async () => {
+    vol.fromJSON({
+      '/proj/_bmad-output/planning-artifacts/product-brief-something.md': '# Product Brief: My App\n',
+    }, '/proj');
+    const state = await buildState('/proj', { fs: vol.promises as any });
+    expect(state.projectName).toBe('My App');
+  });
+
+  it('extracts title from PRD when product-brief absent', async () => {
+    vol.fromJSON({
+      '/proj/_bmad-output/planning-artifacts/PRD.md': '# Product Requirements Document - Acme\n',
+    }, '/proj');
+    const state = await buildState('/proj', { fs: vol.promises as any });
+    expect(state.projectName).toBe('Acme');
+  });
+
   it('uses package.json name when available', async () => {
     vol.fromJSON({
       '/proj/package.json': JSON.stringify({ name: 'my-cool-thing' }),

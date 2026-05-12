@@ -69,10 +69,64 @@ export async function buildState(projectRoot: string, opts: BuildStateOptions = 
 }
 
 async function resolveProjectName(projectRoot: string, fs: FsLike): Promise<string> {
+  // 1) Try human-readable title from BMAD planning artifacts (product brief preferred, then PRD).
+  const candidates = [
+    'product-brief.md',
+    'brief.md',
+    'product-brief-distillate.md',
+    'PRD.md',
+    'prd.md',
+  ];
+  for (const name of candidates) {
+    const title = await readArtifactTitle(path.join(projectRoot, '_bmad-output/planning-artifacts', name), fs);
+    if (title) return title;
+  }
+  // Also scan any product-brief*.md or prd*.md file (BMAD adds suffixes).
+  try {
+    const planningDir = path.join(projectRoot, '_bmad-output/planning-artifacts');
+    const entries = await fs.readdir(planningDir);
+    const preferred = entries
+      .filter(n => /^(product-)?brief.*\.md$/i.test(n) || /^prd.*\.md$/i.test(n))
+      .filter(n => !/validation|review|distillate/i.test(n))
+      .sort();
+    for (const n of preferred) {
+      const title = await readArtifactTitle(path.join(planningDir, n), fs);
+      if (title) return title;
+    }
+  } catch { /* no planning dir */ }
+
+  // 2) package.json fallback.
   try {
     const pkg = await fs.readFile(path.join(projectRoot, 'package.json'), 'utf8');
     const parsed = JSON.parse(pkg) as { name?: string };
     if (parsed.name) return parsed.name;
   } catch { /* no package.json */ }
+
+  // 3) Last resort: folder name.
   return path.basename(projectRoot);
+}
+
+async function readArtifactTitle(filePath: string, fs: FsLike): Promise<string | null> {
+  let content: string;
+  try { content = await fs.readFile(filePath, 'utf8'); }
+  catch { return null; }
+  // Skip optional frontmatter.
+  const body = content.replace(/^---[\s\S]*?---\s*/m, '');
+  const match = body.match(/^#\s+(.+?)\s*$/m);
+  if (!match) return null;
+  return cleanProjectTitle(match[1]);
+}
+
+const GENERIC_DOC_WORDS = /^(product\s+brief|product\s+requirements?\s+document|prd|brief|architecture(?:\s+decision\s+document)?|ux\s+design\s+specification|distillate|epic\s+breakdown)$/i;
+
+function cleanProjectTitle(raw: string): string | null {
+  // Strip generic doc-type prefix when followed by separator (colon, dash, em-dash).
+  const prefixPattern = /^(product\s+brief|product\s+requirements?\s+document|prd|brief|architecture(?:\s+decision\s+document)?|ux\s+design\s+specification)\s*[:\-—]\s*/i;
+  let title = raw.replace(prefixPattern, '').trim();
+  // Strip trailing project descriptors.
+  title = title.replace(/\s+(prd|brief|distillate|specification|document)$/i, '').trim();
+  if (!title) return null;
+  // Reject result if it's still just a generic doc-type word (e.g. raw was "PRD" alone).
+  if (GENERIC_DOC_WORDS.test(title)) return null;
+  return title;
 }
