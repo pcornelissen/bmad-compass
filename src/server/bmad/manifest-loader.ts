@@ -67,6 +67,22 @@ export async function loadWorkflowsFromManifest(
 
       const id = skill.replace(/^bmad-/, '');
       const requires = parseAfter(row.after);
+      const isRequired = (row.required ?? '').trim().toLowerCase() === 'true';
+
+      // Dedupe by skill — BMAD's CSV lists multiple rows when a workflow has internal
+      // sub-actions (e.g. create-story has create/validate). The user invokes the
+      // skill once; keep one entry, preferring the required variant.
+      const existing = workflows.find(w => w.id === id);
+      if (existing) {
+        if (isRequired && existing.optional) {
+          // Upgrade the existing entry with required info.
+          existing.optional = false;
+          existing.title = (row['display-name'] ?? existing.title).trim();
+          if (row.description) existing.description = row.description.trim();
+          if (requires.length > 0) existing.requires = requires;
+        }
+        continue;
+      }
 
       workflows.push({
         id,
@@ -75,7 +91,7 @@ export async function loadWorkflowsFromManifest(
         description: (row.description ?? '').trim(),
         phase,
         agent: '',
-        optional: (row.required ?? '').trim().toLowerCase() !== 'true',
+        optional: !isRequired,
         produces: [],
         requires,
         docsUrl: `https://docs.bmad-method.org/workflows/${id}`,

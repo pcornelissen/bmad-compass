@@ -94,6 +94,22 @@ describe('loadWorkflowsFromManifest', () => {
     expect(result).toBeNull();
   });
 
+  it('dedupes workflows with multiple action rows, preferring required variant', async () => {
+    const dupCsv = `module,skill,display-name,menu-code,description,action,args,phase,after,before,required,output-location,outputs
+bmm,bmad-create-story,Create Story,CS,Story cycle start.,create,,4-implementation,bmad-sprint-planning,bmad-create-story:validate,true,implementation_artifacts,story
+bmm,bmad-create-story,Validate Story,VS,Validates story readiness.,validate,,4-implementation,bmad-create-story:create,bmad-dev-story,false,implementation_artifacts,story validation report
+`;
+    vol.fromJSON({
+      '/proj/_bmad/_config/manifest.yaml': manifestYaml,
+      '/proj/_bmad/bmm/module-help.csv': dupCsv,
+    }, '/proj');
+    const result = await loadWorkflowsFromManifest('/proj', vol.promises as any);
+    const stories = result!.workflows.filter(w => w.id === 'create-story');
+    expect(stories).toHaveLength(1);
+    expect(stories[0].optional).toBe(false);
+    expect(stories[0].title).toBe('Create Story');
+  });
+
   it('uses required=false from csv as optional=true', async () => {
     vol.fromJSON({
       '/proj/_bmad/_config/manifest.yaml': manifestYaml,
