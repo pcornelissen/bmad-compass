@@ -1,8 +1,15 @@
 {
   "name": "bmad-compass",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Local web dashboard that visualizes BMAD-Method project progress alongside Claude Code.",
-  "keywords": ["bmad", "bmad-method", "dashboard", "claude-code", "ai-coding", "workflow"],
+  "keywords": [
+    "bmad",
+    "bmad-method",
+    "dashboard",
+    "claude-code",
+    "ai-coding",
+    "workflow"
+  ],
   "type": "module",
   "bin": {
     "bmad-compass": "./bin/bmad-compass.js"
