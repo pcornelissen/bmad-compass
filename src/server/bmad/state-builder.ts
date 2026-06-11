@@ -13,7 +13,7 @@ import { scanArtifacts } from './scanner.js';
 import { parseSprintStatus } from './sprint-status.js';
 import { computeNextStep, currentPhase } from './next-step.js';
 import { loadWorkflowsFromManifest } from './manifest-loader.js';
-import { applyHintsToDefinition } from './hints.js';
+import { applyHintsToDefinition, loadProjectHints, mergeHints, HINTS } from './hints.js';
 import { computeSubSteps } from './sub-steps.js';
 
 type FsLike = typeof nodeFs.promises;
@@ -35,21 +35,28 @@ export async function buildState(projectRoot: string, opts: BuildStateOptions = 
 
   const projectName = await resolveProjectName(projectRoot, fs);
 
+  const projectHints = await loadProjectHints(projectRoot, fs);
+  const hints = mergeHints(HINTS, projectHints);
+
   const manifestResult = await loadWorkflowsFromManifest(projectRoot, fs);
   const workflowDefs: WorkflowDefinition[] = (manifestResult?.workflows ?? FALLBACK_WORKFLOWS)
-    .map(def => applyHintsToDefinition({ ...def }));
+    .map(def => applyHintsToDefinition({ ...def }, hints));
   const modules: ModuleInfo[] = manifestResult?.modules ?? [];
   const workflowSource: 'manifest' | 'fallback' = manifestResult ? 'manifest' : 'fallback';
 
   const phase = currentPhase(artifacts);
   const nextStep = computeNextStep({ hasBmad, artifacts, stories });
 
+  const retroAggregate = aggregateRetroStatus(stories);
+
   const workflows: Workflow[] = [];
   for (const def of workflowDefs) {
     const matched = artifacts.filter(a => a.workflowId === def.id);
     let status: WorkflowStatus = matched.length > 0 ? 'done' : 'pending';
+    // Retrospectives are tracked per-epic in sprint-status, not always as files.
+    if (def.id === 'retrospective' && retroAggregate) status = retroAggregate;
     if (def.id === nextStep?.workflowId) status = 'in-progress';
-    const subSteps = await computeSubSteps(def.id, artifacts, projectRoot, fs);
+    const subSteps = await computeSubSteps(def.id, artifacts, projectRoot, fs, hints);
     workflows.push({ definition: def, status, artifacts: matched.map(a => a.path), subSteps });
   }
 
@@ -66,6 +73,21 @@ export async function buildState(projectRoot: string, opts: BuildStateOptions = 
     workflowSource,
     generatedAt: Date.now(),
   };
+}
+
+/**
+ * Aggregate per-epic retrospective entries from sprint-status into a single status
+ * for the retrospective workflow. Returns null when there are no retro entries, so the
+ * caller falls back to artifact-based detection.
+ *   done    → at least one retro done and no actionable (non-done, non-optional) retros remain
+ *   pending → otherwise (some retro still actionable, or all optional and untouched)
+ */
+function aggregateRetroStatus(stories: SprintStory[]): WorkflowStatus | null {
+  const retros = stories.filter(s => s.kind === 'retrospective');
+  if (retros.length === 0) return null;
+  const actionable = retros.filter(s => s.status !== 'done' && s.status !== 'optional');
+  const anyDone = retros.some(s => s.status === 'done');
+  return actionable.length === 0 && anyDone ? 'done' : 'pending';
 }
 
 async function resolveProjectName(projectRoot: string, fs: FsLike): Promise<string> {

@@ -121,6 +121,60 @@ bmm,bmad-create-prd,Create PRD,CP,desc,,,2-planning,,,true,planning_artifacts,pr
     expect(prd.definition.agent).toBe('bmad-agent-pm');
   });
 
+  it('marks retrospective done when all epic retros are done in sprint-status', async () => {
+    vol.fromJSON({
+      '/proj/_bmad-output/planning-artifacts/PRD.md': '# x',
+      '/proj/_bmad-output/planning-artifacts/architecture.md': '# x',
+      '/proj/_bmad-output/planning-artifacts/epics/epic-1.md': '# x',
+      '/proj/_bmad-output/implementation-artifacts/sprint-status.yaml':
+        'development_status:\n  epic-1: done\n  1-1-foo: done\n  epic-1-retrospective: done\n  epic-2: done\n  2-1-bar: done\n  epic-2-retrospective: done\n',
+    }, '/proj');
+    const state = await buildState('/proj', { fs: vol.promises as any });
+    expect(state.nextStep).toBeNull();
+    expect(state.workflows.find(w => w.definition.id === 'retrospective')?.status).toBe('done');
+  });
+
+  it('keeps retrospective pending when an epic retro is unfinished and not the next step', async () => {
+    vol.fromJSON({
+      '/proj/_bmad-output/planning-artifacts/PRD.md': '# x',
+      '/proj/_bmad-output/planning-artifacts/architecture.md': '# x',
+      '/proj/_bmad-output/planning-artifacts/epics/epic-1.md': '# x',
+      '/proj/_bmad-output/implementation-artifacts/sprint-status.yaml':
+        'development_status:\n  epic-1: in-progress\n  1-1-foo: done\n  1-2-baz: backlog\n  epic-1-retrospective: backlog\n',
+    }, '/proj');
+    const state = await buildState('/proj', { fs: vol.promises as any });
+    expect(state.nextStep?.workflowId).toBe('create-story');
+    expect(state.workflows.find(w => w.definition.id === 'retrospective')?.status).toBe('pending');
+  });
+
+  it('falls back to artifact-based retrospective status when sprint-status has no retro entries', async () => {
+    vol.fromJSON({
+      '/proj/_bmad-output/planning-artifacts/PRD.md': '# x',
+      '/proj/_bmad-output/planning-artifacts/architecture.md': '# x',
+      '/proj/_bmad-output/planning-artifacts/epics/epic-1.md': '# x',
+      '/proj/_bmad-output/implementation-artifacts/retrospective.md': '# retro',
+      '/proj/_bmad-output/implementation-artifacts/sprint-status.yaml':
+        'development_status:\n  epic-1: done\n  1-1-foo: done\n',
+    }, '/proj');
+    const state = await buildState('/proj', { fs: vol.promises as any });
+    expect(state.workflows.find(w => w.definition.id === 'retrospective')?.status).toBe('done');
+  });
+
+  it('applies project .compass-hints.yaml over the built-in hints', async () => {
+    vol.fromJSON({
+      '/proj/.compass-hints.yaml':
+        'workflows:\n  create-prd:\n    sectionHints:\n      - Problem Statement\n      - Compliance Constraints\n',
+      '/proj/_bmad-output/planning-artifacts/PRD.md': '## Problem Statement\n',
+    }, '/proj');
+    const state = await buildState('/proj', { fs: vol.promises as any });
+    const prd = state.workflows.find(w => w.definition.id === 'create-prd')!;
+    const labels = prd.subSteps!.map(s => s.label);
+    // Project-specific hint surfaces...
+    expect(prd.subSteps!.some(s => s.status === 'hinted' && s.label === 'Compliance Constraints')).toBe(true);
+    // ...and the built-in hints it replaced no longer appear.
+    expect(labels).not.toContain('User Personas');
+  });
+
   it('attaches subSteps to workflows that have hints or matching files', async () => {
     vol.fromJSON({
       '/proj/_bmad-output/planning-artifacts/PRD.md': '## Problem Statement\n\n## Goals\n',

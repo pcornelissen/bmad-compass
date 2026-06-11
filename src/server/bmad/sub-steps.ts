@@ -1,7 +1,7 @@
 import * as nodeFs from 'node:fs';
 import path from 'node:path';
 import type { Artifact, SubStep } from '../../shared/types.js';
-import { getHint } from './hints.js';
+import { getHint, HINTS, type WorkflowHint } from './hints.js';
 
 type FsLike = typeof nodeFs.promises;
 
@@ -12,11 +12,12 @@ export async function computeSubSteps(
   artifacts: Artifact[],
   projectRoot: string,
   fs: FsLike,
+  hints: Record<string, WorkflowHint> = HINTS,
 ): Promise<SubStep[] | undefined> {
   if (FILE_WORKFLOWS.has(workflowId)) {
     return computeFileSubSteps(workflowId, artifacts);
   }
-  return computeSectionSubSteps(workflowId, artifacts, projectRoot, fs);
+  return computeSectionSubSteps(workflowId, artifacts, projectRoot, fs, hints);
 }
 
 function computeFileSubSteps(workflowId: string, artifacts: Artifact[]): SubStep[] | undefined {
@@ -41,8 +42,9 @@ async function computeSectionSubSteps(
   artifacts: Artifact[],
   projectRoot: string,
   fs: FsLike,
+  hints: Record<string, WorkflowHint>,
 ): Promise<SubStep[] | undefined> {
-  const hint = getHint(workflowId);
+  const hint = getHint(workflowId, hints);
   const mdArtifact = artifacts.find(a => a.workflowId === workflowId && a.path.endsWith('.md'));
 
   let doneSubSteps: SubStep[] = [];
