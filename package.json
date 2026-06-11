@@ -1,6 +1,6 @@
 {
   "name": "bmad-compass",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Local web dashboard that visualizes BMAD-Method project progress alongside Claude Code.",
   "keywords": [
     "bmad",
@@ -23,13 +23,13 @@
   ],
   "author": "Patrick Cornelißen <patrick.cornelissen@atvantage.com>",
   "license": "MIT",
-  "homepage": "https://github.com/pcornelissen/bmad-compass#readme",
+  "homepage": "https://github.com/pc-software-org/bmad-compass#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/pcornelissen/bmad-compass.git"
+    "url": "https://github.com/pc-software-org/bmad-compass.git"
   },
   "bugs": {
-    "url": "https://github.com/pcornelissen/bmad-compass/issues"
+    "url": "https://github.com/pc-software-org/bmad-compass/issues"
   },
   "scripts": {
     "dev:server": "tsx watch src/server/index.ts",
